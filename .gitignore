@@ -1,7 +1,9 @@
 # folders
 venv/
-
+__pycache__/
 
 # files
+*.pyc
+secrets.json
 
 # others
