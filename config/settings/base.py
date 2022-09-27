@@ -10,11 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-import json
-import os
-
 from pathlib import Path
-from django.core.exceptions import ImproperlyConfigured
+
+from config.settings.secrets_viewer import SecretsViewer
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -24,21 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-secret_file = os.path.join(BASE_DIR, "config/settings/secrets.json")
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
-
-
-def get_secret(settings, secrets=secrets):
-    try:
-        return secrets[settings]
-    except KeyError:
-        error_msg = f"Set the {settings} environment variable."
-        raise ImproperlyConfigured(error_msg)
-
-
-SECRET_KEY = get_secret("SECRET_KEY")
+secrets_viewer = SecretsViewer()
+SECRET_KEY = secrets_viewer.get_secret("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -55,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -91,7 +78,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {"default": get_secret("DATABASE")}
+DATABASES = {"default": secrets_viewer.get_secret("DATABASE")}
 
 
 # Password validation
