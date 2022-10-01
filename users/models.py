@@ -22,7 +22,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     user_id = models.CharField(max_length=100, unique=True)
     clan_id = models.CharField(max_length=100, unique=True)
-    favorate_race = models.CharField(max_length=10, choices=RACE_LIST)
+    favorate_race = models.CharField(max_length=10, choices=RACE_LIST, default="random")
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -36,6 +36,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         "clan_id",
     ]
 
+    # social_login_id
+
     kakao_id = models.BigIntegerField(default=0, null=True)
 
     objects = UserManager()
+
+    def __str__(self):
+        return self.clan_id
