@@ -1,64 +1,52 @@
-from django.shortcuts import redirect
+import requests
+
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from config.settings.secrets_viewer import SecretsViewer
+
+class KakaoException(Exception):
+    pass
 
 
-class KakaoSignUpAPIView(APIView):
+class KakaoSignInView(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, requst, *args, **kwargs):
+    def post(self, request):
+        try:
+            access_token = request.data["access_token"]
 
-        secrets_viewer = SecretsViewer()
-        oauths = secrets_viewer.get_secret("OAUTH")
-        client_id = oauths["KAKAO"]["REST_API_KEY"]
-        redirect_uri = "http://127.0.0.1:8000/api/v1/auth/signup/kakao/callback"
+            url = "https://kapi.kakao.com/v2/user/me"
+            headers = {"Authorization": f"Bearer {access_token}"}
+            kakao_user_data_response = requests.get(url=url, headers=headers)
 
-        kakao_login_uri = "https://kauth.kakao.com/oauth/authorize"
+            if kakao_user_data_response.status_code != 200:
+                raise KakaoException()
 
-        uri = f"{kakao_login_uri}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+            kakao_user_data = kakao_user_data_response.json()["kakao_account"]
+            kakao_user_email = kakao_user_data["email"]
 
-        return redirect(uri)
+            user = get_user_model().objects.get(
+                email=kakao_user_email, registration_type="kakao"
+            )
+            if user:
+                refresh = RefreshToken.for_user(user)
+                data = {"access": str(refresh.access_token), "refresh": str(refresh)}
+                return Response(data=data, status=status.HTTP_200_OK)
+            else:
+                raise ObjectDoesNotExist
 
-
-class KakaoSignUpCallBackAPIView(APIView):
-    permission_classes = (AllowAny,)
-
-    def get(self, request):
-        import requests
-
-        # request access token to Kakao login api
-        secrets_viewer = SecretsViewer()
-        url = "https://kauth.kakao.com/oauth/token"
-        code = request.query_params.get("code")
-
-        if not code:
-            error_msg = "인가 코드가 필요합니다."
-            return Response(error_msg, status.HTTP_400_BAD_REQUEST)
-
-        data = {
-            "grant_type": "authorization_code",
-            "client_id": secrets_viewer.get_secret("OAUTH")["KAKAO"]["REST_API_KEY"],
-            "redirect_uri": "http://127.0.0.1:8000/api/v1/auth/signup/kakao/callback",
-            "code": code,
-        }
-
-        token_response = requests.post(url, data)
-        if token_response.status_code > 200:
-            error_msg = "액세스 토큰을 받지 못했습니다."
-            return Response(error_msg, status.HTTP_400_BAD_REQUEST)
-
-        token_json = token_response.json()
-        access_token = token_json.get("access_token")
-
-        # request userdata to Kakao user api
-        userdata_response = requests.get(
-            url="https://kapi.kakao.com/v2/user/me",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
-
-        return Response(userdata_response.json())
+        except KeyError:
+            error_msg = "잘못된 요청입니다."
+            return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
+        except KakaoException:
+            error_msg = "잘못된 엑세스 토큰입니다."
+            return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            error_msg = "가입되지 않은 유저입니다."
+            return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
