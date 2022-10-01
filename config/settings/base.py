@@ -14,6 +14,7 @@ from pathlib import Path
 
 from config.settings.secrets_viewer import SecretsViewer
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -40,12 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sites",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.kakao",
     "rest_framework",
+    "rest_framework_simplejwt",
     "users",
 ]
 
@@ -129,9 +126,6 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Django-allauth settings
-LOGIN_REDIRECT_URL = "/admin"
-ACCOUNT_LOGOUT_REDIRECT_URL = "/api/v1/"
-ACCOUNT_LOGOUT_ON_GET = True
+# Custom user model
 
-SITE_ID = 1
+AUTH_USER_MODEL = "users.User"
