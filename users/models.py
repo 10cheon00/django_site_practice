@@ -14,8 +14,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     registration_type = models.CharField(
         max_length=20, choices=USER_TYPE_CHOICES, default=USER_TYPE_CHOICES[0]
     )
-    email = models.EmailField(max_length=254, unique=True)
-    name = models.CharField(max_length=100, unique=True)
+    user_id = models.CharField(max_length=100, unique=True)
+    clan_id = models.CharField(max_length=100, unique=True)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -24,10 +24,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
 
-    USERNAME_FIELD = "name"
-    EMAIL_FIELD = "email"
+    USERNAME_FIELD = "user_id"
     REQUIRED_FIELDS = [
-        "email",
+        "clan_id",
     ]
+
+    kakao_id = models.BigIntegerField(default=0, null=True)
 
     objects = UserManager()
