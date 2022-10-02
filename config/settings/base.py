@@ -152,3 +152,16 @@ SIMPLE_JWT = {
 }
 
 
+# Email Authentication
+
+EMAIL_USE_TLS = True
+
+email_secrets = secrets_viewer.get_secret("EMAIL")
+
+EMAIL_HOST = email_secrets["HOST"]
+
+EMAIL_PORT = email_secrets["PORT"]
+
+EMAIL_HOST_USER = email_secrets["HOST_USER"]
+
+EMAIL_HOST_PASSWORD = email_secrets["HOST_PASSWORD"]
