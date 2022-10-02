@@ -48,9 +48,8 @@ class KakaoSignInView(APIView):
             if not user.exists():
                 raise User.DoesNotExist("가입되지 않은 사용자입니다.")
 
-            refresh = RefreshToken.for_user(user.first())
-            data = {"access": str(refresh.access_token), "refresh": str(refresh)}
-            return Response(data=data, status=status.HTTP_200_OK)
+            token = create_token_with_user(user.first())
+            return Response(data=token, status=status.HTTP_200_OK)
 
         except KeyError as key:
             error_msg = f"{str(key)}필드에 오류가 있습니다."
@@ -84,9 +83,8 @@ class KakaoSignUpView(APIView):
                 username=username, nickname=nickname, **extra_fields
             )
 
-            refresh = RefreshToken.for_user(created_user)
-            data = {"access": str(refresh.access_token), "refresh": str(refresh)}
-            return Response(data=data, status=status.HTTP_200_OK)
+            token = create_token_with_user(created_user)
+            return Response(data=token, status=status.HTTP_201_CREATED)
         except KeyError as e:
             error_msg = f"{str(e)}필드에 오류가 있습니다."
             return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
