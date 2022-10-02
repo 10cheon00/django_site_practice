@@ -1,5 +1,4 @@
 import jwt
-import requests
 
 from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
@@ -14,11 +13,8 @@ from rest_framework.views import APIView
 from config.settings.base import SECRET_KEY
 from users.serializers import UserSerializer
 from users.utils import create_token_with_user
+from users.utils import fetch_kakao_user_data
 from users.utils import send_verification_email
-
-
-class KakaoException(Exception):
-    pass
 
 
 class UserAlreadyExists(Exception):
@@ -81,21 +77,6 @@ class VerifyEmailAPIView(APIView):
             return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-
-
-def fetch_kakao_user_data(access_token):
-    try:
-        url = "https://kapi.kakao.com/v2/user/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
-
-        response = requests.get(url=url, headers=headers)
-        if response.status_code != 200:
-            raise KakaoException("잘못된 엑세스 토큰입니다.")
-
-        user_data = response.json()
-        return user_data
-    except Exception as exception:
-        raise exception
 
 
 class KakaoSignInView(APIView):
