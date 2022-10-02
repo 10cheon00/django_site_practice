@@ -73,15 +73,15 @@ class KakaoSignUpView(APIView):
             if user.exists():
                 raise UserAlreadyExists("이미 가입되어있는 유저입니다.")
 
-            user_id = kakao_user_id
-            clan_id = request.data["clan_id"]
+            username = kakao_user_id
+            nickname = request.data["nickname"]
             extra_fields = {
                 "favorate_race": request.data["favorate_race"],
                 "registration_type": "kakao",
-                "kakao_id": user_id,
+                "kakao_id": username,
             }
             created_user = User.objects.create_user(
-                user_id=user_id, clan_id=clan_id, **extra_fields
+                username=username, nickname=nickname, **extra_fields
             )
 
             refresh = RefreshToken.for_user(created_user)

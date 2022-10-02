@@ -2,9 +2,9 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, user_id, clan_id, password=None, **extra_fields):
+    def create_user(self, username, nickname, password=None, **extra_fields):
         try:
-            user = self.model(user_id=user_id, clan_id=clan_id, **extra_fields)
+            user = self.model(username=username, nickname=nickname, **extra_fields)
             if password:
                 user.set_password(password)
             else:
@@ -18,10 +18,10 @@ class UserManager(BaseUserManager):
         except Exception as e:
             print(e)
 
-    def create_superuser(self, user_id, clan_id, password=None, **extra_fields):
+    def create_superuser(self, username, nickname, password=None, **extra_fields):
         try:
             superuser = self.create_user(
-                user_id=user_id, clan_id=clan_id, password=password, **extra_fields
+                username=username, nickname=nickname, password=password, **extra_fields
             )
             superuser.is_staff = True
             superuser.is_superuser = True
