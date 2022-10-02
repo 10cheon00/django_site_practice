@@ -20,8 +20,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     registration_type = models.CharField(
         max_length=20, choices=USER_TYPE_CHOICES, default=USER_TYPE_CHOICES[0]
     )
-    user_id = models.CharField(max_length=100, unique=True)
-    clan_id = models.CharField(max_length=100, unique=True)
+    username = models.CharField(max_length=100, unique=True)
+    nickname = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(max_length=254, null=True, unique=True)
     favorate_race = models.CharField(max_length=10, choices=RACE_LIST, default="random")
 
     is_staff = models.BooleanField(default=False)
@@ -31,10 +32,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
 
-    USERNAME_FIELD = "user_id"
-    REQUIRED_FIELDS = [
-        "clan_id",
-    ]
+    USERNAME_FIELD = "username"
+    EMAIL_FIELD = "email"
+    REQUIRED_FIELDS = ["nickname", "email"]
 
     # social_login_id
 
@@ -43,4 +43,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return self.clan_id
+        return self.nickname
