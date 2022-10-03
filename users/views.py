@@ -18,23 +18,6 @@ from users.utils import fetch_kakao_user_data
 from users.utils import send_verification_email
 
 
-class PasswordLogInAPIView(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        User = get_user_model()
-        try:
-            user = authenticate(
-                username=request.data["username"], password=request.data["password"]
-            )
-            if user is None:
-                raise User.DoesNotExist("아이디 또는 비밀번호가 잘못되었습니다.")
-            token = create_token_with_user(user)
-            return Response(data=token, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(data=str(e), status=status.HTTP_400_BAD_REQUEST)
-
-
 class EmailRegistrationAPIView(APIView):
     permission_classes = (AllowAny,)
     serializer = UserSerializer
