@@ -67,41 +67,6 @@ class EmailRegistrationAPIView(APIView):
 
             send_verification_email(data)
 
-
-class EmailRegistrationAPIView(APIView):
-    serializer = UserSerializer
-
-    def post(self, request):
-        User = get_user_model()
-        with transaction.atomic():
-            serializer = self.serializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                form_data = serializer.data
-
-                user = User.objects.create_user(
-                    username=form_data.pop("username"),
-                    nickname=form_data.pop("nickname"),
-                    password=form_data.pop("password"),
-                    **form_data,
-                )
-                user.is_active = False
-                user.save()
-
-            token = create_token_with_user(user)
-            current_site = get_current_site(request)
-            relative_url = reverse("verify-email")
-            absolute_url = (
-                f"http://{current_site}{relative_url}?token={token.get('access')}"
-            )
-            email_body = f"Hello {user.nickname}, Use link below to verify your account.\n{absolute_url}"
-            data = {
-                "email_body": email_body,
-                "email_subject": "Verify your email",
-                "to_email": user.email,
-            }
-
-            send_verification_email(data)
-
             return Response(data=token, status=status.HTTP_201_CREATED)
 
 
