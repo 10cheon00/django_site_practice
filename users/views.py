@@ -19,6 +19,8 @@ from users.utils import send_verification_email
 
 
 class PasswordLogInAPIView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         User = get_user_model()
         try:
@@ -34,6 +36,7 @@ class PasswordLogInAPIView(APIView):
 
 
 class EmailRegistrationAPIView(APIView):
+    permission_classes = (AllowAny,)
     serializer = UserSerializer
 
     def post(self, request):
@@ -71,6 +74,8 @@ class EmailRegistrationAPIView(APIView):
 
 
 class VerifyEmailAPIView(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request):
         User = get_user_model()
         token = request.query_params.get("token")
@@ -118,6 +123,8 @@ class KakaoLogInView(APIView):
 
 
 class KakaoRegistrationView(APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         User = get_user_model()
         try:
