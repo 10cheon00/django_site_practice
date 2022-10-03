@@ -18,10 +18,6 @@ from users.utils import fetch_kakao_user_data
 from users.utils import send_verification_email
 
 
-class UserAlreadyExists(Exception):
-    pass
-
-
 class PasswordLogInAPIView(APIView):
     def post(self, request):
         User = get_user_model()
@@ -133,7 +129,7 @@ class KakaoRegistrationView(APIView):
                 kakao_id=kakao_user_id, registration_type="kakao"
             )
             if user.exists():
-                raise UserAlreadyExists("이미 가입되어있는 유저입니다.")
+                raise Exception("이미 가입되어있는 유저입니다.")
 
             username = kakao_user_id
             nickname = request.data["nickname"]
