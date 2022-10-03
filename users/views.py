@@ -57,7 +57,7 @@ class EmailRegistrationAPIView(APIView):
 
             token = create_token_with_user(user)
             current_site = get_current_site(request)
-            relative_url = reverse("verify-email")
+            relative_url = reverse("email-verification")
             absolute_url = (
                 f"http://{current_site}{relative_url}?token={token.get('access')}"
             )
