@@ -1,5 +1,6 @@
 import jwt
 
+from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
@@ -17,8 +18,54 @@ from users.utils import fetch_kakao_user_data
 from users.utils import send_verification_email
 
 
-class UserAlreadyExists(Exception):
-    pass
+class PasswordLogInAPIView(APIView):
+    def post(self, request):
+        User = get_user_model()
+        try:
+            user = authenticate(
+                username=request.data["username"], password=request.data["password"]
+            )
+            if user is None:
+                raise User.DoesNotExist("아이디 또는 비밀번호가 잘못되었습니다.")
+            token = create_token_with_user(user)
+            return Response(data=token, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data=str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailRegistrationAPIView(APIView):
+    serializer = UserSerializer
+
+    def post(self, request):
+        User = get_user_model()
+        with transaction.atomic():
+            serializer = self.serializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                form_data = serializer.data
+
+                user = User.objects.create_user(
+                    username=form_data.pop("username"),
+                    nickname=form_data.pop("nickname"),
+                    password=form_data.pop("password"),
+                    **form_data,
+                )
+                user.is_active = False
+                user.save()
+
+            token = create_token_with_user(user)
+            current_site = get_current_site(request)
+            relative_url = reverse("verify-email")
+            absolute_url = (
+                f"http://{current_site}{relative_url}?token={token.get('access')}"
+            )
+            email_body = f"Hello {user.nickname}, Use link below to verify your account.\n{absolute_url}"
+            data = {
+                "email_body": email_body,
+                "email_subject": "Verify your email",
+                "to_email": user.email,
+            }
+
+            send_verification_email(data)
 
 
 class EmailRegistrationAPIView(APIView):
@@ -79,7 +126,7 @@ class VerifyEmailAPIView(APIView):
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-class KakaoSignInView(APIView):
+class KakaoLogInView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
@@ -105,7 +152,7 @@ class KakaoSignInView(APIView):
             return Response(data=str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-class KakaoSignUpView(APIView):
+class KakaoRegistrationView(APIView):
     def post(self, request):
         User = get_user_model()
         try:
@@ -117,7 +164,7 @@ class KakaoSignUpView(APIView):
                 kakao_id=kakao_user_id, registration_type="kakao"
             )
             if user.exists():
-                raise UserAlreadyExists("이미 가입되어있는 유저입니다.")
+                raise Exception("이미 가입되어있는 유저입니다.")
 
             username = kakao_user_id
             nickname = request.data["nickname"]
