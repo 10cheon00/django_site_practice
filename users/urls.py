@@ -14,16 +14,16 @@ urlpatterns = [
     path("login", TokenObtainPairView.as_view(), name="login"),
     path("login/kakao", KakaoLogInView.as_view(), name="kakao-login"),
     path(
-        "registration/kakao", KakaoRegistrationView.as_view(), name="kakao-registration"
-    ),
-    path(
-        "registration/email",
+        "registration",
         EmailRegistrationAPIView.as_view(),
-        name="email-registration",
+        name="registration",
     ),
     path(
         "registration/email/verify",
         VerifyEmailAPIView.as_view(),
         name="email-verification",
+    ),
+    path(
+        "registration/kakao", KakaoRegistrationView.as_view(), name="kakao-registration"
     ),
 ]
