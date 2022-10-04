@@ -36,7 +36,7 @@ class EmailRegistrationAPIView(APIView):
                     password=form_data.pop("password"),
                     **form_data,
                 )
-                user.is_active = False
+                user.is_verified = False
                 user.save()
 
             token = create_token_with_user(user)
@@ -66,7 +66,7 @@ class VerifyEmailAPIView(APIView):
         try:
             payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms="HS256")
             user = User.objects.get(id=payload["user_id"])
-            user.is_active = True
+            user.is_verified = True
             user.save()
 
             return Response(data="인증되었습니다.", status=status.HTTP_200_OK)
