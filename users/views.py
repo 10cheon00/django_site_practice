@@ -102,6 +102,8 @@ class KakaoLogInView(APIView):
         except KeyError as key:
             error_msg = f"{str(key)}필드에 오류가 있습니다."
             return Response(data=error_msg, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist as e:
+            return Response(data=str(e), status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response(data=str(e), status=status.HTTP_400_BAD_REQUEST)
 
