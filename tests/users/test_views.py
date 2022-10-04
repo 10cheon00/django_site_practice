@@ -243,3 +243,68 @@ class AuthenticationTest(APITestCase):
         wrong_credential = {"username": "sample", "password": "wrong_password"}
         response = self.client.post(path=self.authentication_url, data=wrong_credential)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+@patch("users.utils.requests")
+class KakaoLoginTest(APITestCase):
+    class MockKakaoResponse:
+        def __init__(self):
+            self.status_code = 200
+
+        def json(self):
+            return {
+                "id": 123456789,
+                "kakao_account": {"email": "sample@email.com"},
+            }
+
+    def setUp(self):
+        self.login_url = reverse("kakao-login")
+        self.credential = {"access_token": "token"}
+        self.registration_url = reverse("kakao-registration")
+        self.registration_form = {
+            "access_token": "token",
+            "nickname": "nickname",
+            "favorate_race": "zerg",
+        }
+
+    def tearDown(self):
+        get_user_model().objects.all().delete()
+
+    def test_success_kakao_login(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(
+            path=self.registration_url, data=self.registration_form
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(path=self.login_url, data=self.credential)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("access" in response.data)
+        self.assertTrue("refresh" in response.data)
+
+    def test_fail_kakao_login_with_wrong_access_token(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(
+            path=self.registration_url, data=self.registration_form
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        class MockKakaoResponse:
+            def __init__(self):
+                self.status_code = 401
+
+            def json(self):
+                return {"msg": "this access token does not exist", "code": -401}
+
+        mock_kakao_api.get = Mock(return_value=MockKakaoResponse())
+
+        response = self.client.post(path=self.login_url, data=self.credential)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_fail_kakao_login_with_no_exist_user(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(path=self.login_url, data=self.credential)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
