@@ -174,5 +174,40 @@ class KakaoRegistrationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class JWTAuthenticationTest(APITestCase):
-    pass
+class AuthenticationTest(APITestCase):
+    def setUp(self):
+        self.registration_url = reverse("registration")
+        self.authentication_url = reverse("login")
+        self.credential = {"username": "sample", "password": "password"}
+        self.form_data = self.credential
+        self.form_data.update(
+            {
+                "favorate_race": "zerg",
+                "email": "sample@email.com",
+                "nickname": "nickname",
+            }
+        )
+
+    def tearDown(self):
+        get_user_model().objects.all().delete()
+
+    def test_success_authentication(self):
+        response = self.client.post(path=self.registration_url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(path=self.authentication_url, data=self.credential)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("access" in response.data)
+        self.assertTrue("refresh" in response.data)
+
+    def test_fail_authentication_with_wrong_credential(self):
+        response = self.client.post(path=self.registration_url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        wrong_credential = {"username": "wrong_name", "password": "password"}
+        response = self.client.post(path=self.authentication_url, data=wrong_credential)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        wrong_credential = {"username": "sample", "password": "wrong_password"}
+        response = self.client.post(path=self.authentication_url, data=wrong_credential)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
