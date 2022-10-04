@@ -11,8 +11,7 @@ from rest_framework.test import APITestCase
 
 class EmailRegistrationTest(APITestCase):
     def setUp(self):
-        self.User = get_user_model()
-        self.registration_url = reverse("email-registration")
+        self.registration_url = reverse("registration")
         self.form_data = {
             "username": "user01",
             "password": "password01",
@@ -20,6 +19,9 @@ class EmailRegistrationTest(APITestCase):
             "email": "10cheon00@naver.com",
             "favorate_race": "zerg",
         }
+
+    def tearDown(self):
+        get_user_model().objects.all().delete()
 
     def test_success_registration(self):
         response = self.client.post(path=self.registration_url, data=self.form_data)
