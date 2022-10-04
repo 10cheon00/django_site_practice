@@ -1,3 +1,6 @@
+from unittest.mock import Mock
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.urls import reverse
@@ -88,3 +91,86 @@ class EmailRegistrationTest(APITestCase):
 
         response = self.client.get(path=verification_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+@patch("users.utils.requests")
+class KakaoRegistrationTest(APITestCase):
+    class MockKakaoResponse:
+        def __init__(self):
+            self.status_code = 200
+
+        def json(self):
+            return {
+                "id": 123456789,
+                "kakao_account": {"email": "sample@email.com"},
+            }
+
+    def setUp(self):
+        self.url = reverse("kakao-registration")
+        self.form_data = {
+            "access_token": "token",
+            "nickname": "sample",
+            "favorate_race": "protoss",
+        }
+
+    def tearDown(self):
+        get_user_model().objects.all().delete()
+
+    def test_success_kakao_registration(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(path=self.url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_fail_kakao_registration_with_wrong_access_token(self, mock_kakao_api):
+        class MockKakaoResponse:
+            def __init__(self):
+                self.status_code = 401
+
+            def json(self):
+                return {"msg": "this access token does not exist", "code": -401}
+
+        mock_kakao_api.get = Mock(return_value=MockKakaoResponse())
+
+        form_data = self.form_data
+        form_data["access_token"] = "something wrong in access_token"
+        response = self.client.post(path=self.url, data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_fail_kakao_registration_with_wrong_favorate_race(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        form_data = self.form_data
+        form_data["favorate_race"] = "wrong_race"
+        response = self.client.post(path=self.url, data=form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_fail_kakao_registration_with_already_exist_user(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(path=self.url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(path=self.url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_fail_kakao_registration_with_already_exist_nickname(self, mock_kakao_api):
+        mock_kakao_api.get = Mock(return_value=self.MockKakaoResponse())
+
+        response = self.client.post(path=self.url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        class MockKakaoResponse(self.MockKakaoResponse):
+            def json(self):
+                return {
+                    "id": 999999999,
+                    "kakao_account": {"email": "other@email.com"},
+                }
+
+        mock_kakao_api.get = Mock(return_value=MockKakaoResponse())
+        response = self.client.post(path=self.url, data=self.form_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class JWTAuthenticationTest(APITestCase):
+    pass
