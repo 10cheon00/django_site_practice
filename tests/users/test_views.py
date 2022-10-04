@@ -26,6 +26,8 @@ class EmailRegistrationTest(APITestCase):
     def test_success_registration(self):
         response = self.client.post(path=self.registration_url, data=self.form_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue("access" in response.data)
+        self.assertTrue("refresh" in response.data)
 
     def test_fail_registration_with_wrong_email(self):
         """Registering with wrong email format will be fail."""
@@ -123,6 +125,8 @@ class KakaoRegistrationTest(APITestCase):
 
         response = self.client.post(path=self.url, data=self.form_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue("access" in response.data)
+        self.assertTrue("refresh" in response.data)
 
     def test_fail_kakao_registration_with_wrong_access_token(self, mock_kakao_api):
         class MockKakaoResponse:
