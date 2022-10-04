@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 from config.settings.secrets_viewer import SecretsViewer
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
     "users",
 ]
 
@@ -123,3 +126,42 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Custom user model
+
+AUTH_USER_MODEL = "users.User"
+
+
+# Django Rest Framework
+
+REST_FRAMEWORK = {
+    "NONE_FIELD_ERRORS_KEY": "error",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+
+# Django Rest Framework Simple JWT
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+}
+
+
+# Email Authentication
+
+EMAIL_USE_TLS = True
+
+email_secrets = secrets_viewer.get_secret("EMAIL")
+
+EMAIL_HOST = email_secrets["HOST"]
+
+EMAIL_PORT = email_secrets["PORT"]
+
+EMAIL_HOST_USER = email_secrets["HOST_USER"]
+
+EMAIL_HOST_PASSWORD = email_secrets["HOST_PASSWORD"]
