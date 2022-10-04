@@ -244,6 +244,10 @@ class AuthenticationTest(APITestCase):
         response = self.client.post(path=self.authentication_url, data=wrong_credential)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_fail_autuentication_with_no_exist_user(self):
+        response = self.client.post(path=self.authentication_url, data=self.credential)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 @patch("users.utils.requests")
 class KakaoLoginTest(APITestCase):
