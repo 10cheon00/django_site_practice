@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.settings.base import SECRET_KEY
+from users.serializers import KakaoRegistrationSerializer
 from users.serializers import UserSerializer
 from users.utils import create_token_with_user
 from users.utils import fetch_kakao_user_data
@@ -107,11 +108,15 @@ class KakaoLogInView(APIView):
 
 class KakaoRegistrationView(APIView):
     permission_classes = (AllowAny,)
+    serializer_class = KakaoRegistrationSerializer
 
     def post(self, request):
         User = get_user_model()
         try:
-            access_token = request.data["access_token"]
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            access_token = serializer.data["access_token"]
             kakao_user_data = fetch_kakao_user_data(access_token)
             kakao_user_id = kakao_user_data["id"]
 
@@ -122,9 +127,9 @@ class KakaoRegistrationView(APIView):
                 raise Exception("이미 가입되어있는 유저입니다.")
 
             username = kakao_user_id
-            nickname = request.data["nickname"]
+            nickname = serializer.data["nickname"]
             extra_fields = {
-                "favorate_race": request.data["favorate_race"],
+                "favorate_race": serializer.data["favorate_race"],
                 "registration_type": "kakao",
                 "kakao_id": username,
             }
