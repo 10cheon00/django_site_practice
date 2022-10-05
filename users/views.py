@@ -1,6 +1,5 @@
 import jwt
 
-from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
