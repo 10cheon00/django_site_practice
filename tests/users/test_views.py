@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import Mock
 from unittest.mock import patch
 
@@ -7,6 +8,7 @@ from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class EmailRegistrationTest(APITestCase):
@@ -312,3 +314,25 @@ class KakaoLoginTest(APITestCase):
 
         response = self.client.post(path=self.login_url, data=self.credential)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class JWTRefreshTest(APITestCase):
+    def setUp(self):
+        user = get_user_model().objects.create(
+            username="username",
+            password="password",
+            email="email@email.com",
+            favorate_race="zerg",
+            nickname="nickname",
+        )
+        self.refresh_token_url = reverse("token-refresh")
+        self.refresh_token = {"refresh": str(RefreshToken.for_user(user=user))}
+
+    def tearDown(self):
+        get_user_model().objects.all().delete()
+
+    def test_success_refresh_token(self):
+        response = self.client.post(
+            path=self.refresh_token_url, data=self.refresh_token
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
