@@ -19,11 +19,7 @@ class Post(models.Model):
     author = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="posts"
     )
-    #
-    # header = models.ForeignKey()
-    #
-    # Need content field until you have an idea to display image in client.
-    #
+    content = models.TextField(null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True, null=True)
     tags = models.ManyToManyField(Tag, related_name="posts")
