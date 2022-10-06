@@ -54,24 +54,17 @@ class PostModelTest(APITestCase):
         related_name = Post._meta.get_field("tags").related_query_name()
         self.assertEqual(related_name, "posts")
 
-    def test_success_initialization_default_values_if_create_post(self):
+    def test_default_values(self):
         mock_datetime = datetime(2000, 1, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
 
         with patch("django.utils.timezone.now", Mock(return_value=mock_datetime)):
             post = Post.objects.create(
                 title="title", author=self.user, category=self.category
             )
+            self.assertIsNone(post.content)
             self.assertEqual(post.created_date, mock_datetime)
             self.assertEqual(post.modified_date, mock_datetime)
             self.assertEqual(post.tags.count(), 0)
-            #
-            # self.assertEqual(post.header, "")
-            #
-            # The reason of annotated is problem of integrity.
-            # Headers are divided by category,
-            # and categories are included in the post,
-            # but headers are also included in the post.
-            #
             self.assertEqual(post.views, 0)
             self.assertEqual(post.up_votes, 0)
             self.assertEqual(post.down_votes, 0)
