@@ -1,0 +1,2 @@
+class KakaoException(Exception):
+    pass

@@ -1,7 +1,10 @@
 # folders
 venv/
-
+__pycache__/
+migrations/
 
 # files
+*.pyc
+secrets.json
 
 # others
