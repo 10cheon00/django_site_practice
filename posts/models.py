@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from django.db import models
 
 
@@ -31,3 +32,13 @@ class Post(models.Model):
     down_votes = models.IntegerField(default=0)
     is_secret = models.BooleanField(default=False)
     is_notice = models.BooleanField(default=False)
+
+
+def get_image_path(instance, filename):
+    today = timezone.now()
+    return f"images/{today.year}-{today.month}-{today.day}/{filename}"
+
+
+class Image(models.Model):
+    file = models.ImageField(upload_to=get_image_path)
+    uploaded_date = models.DateTimeField(auto_now_add=True)
