@@ -1,18 +1,14 @@
-import os
 from datetime import datetime
 from unittest.mock import Mock
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
 
 from rest_framework.test import APITestCase
 
 from posts.models import Category
-from posts.models import get_image_path
-from posts.models import Image
 from posts.models import Post
 
 
@@ -93,34 +89,3 @@ class PostModelTest(APITestCase):
             post.title = "modified title"
             post.save()
             self.assertEqual(post.modified_date, mock_modified_datetime)
-
-
-class ImageModelTest(APITestCase):
-    def setUp(self):
-        self.filename = "cat"
-        image_path = "tests/posts/test_image.png"
-        self.uploaded_image = SimpleUploadedFile(
-            name=self.filename,
-            content=open(image_path, "rb").read(),
-            content_type="image/png",
-        )
-
-    def tearDown(self):
-        Image.objects.all().delete()
-
-    def test_uploaded_image_path(self):
-        uploaded_datetime = datetime(2000, 1, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
-        mock_datetime = Mock(return_value=uploaded_datetime)
-
-        with patch("django.utils.timezone.now", mock_datetime):
-            image_path = get_image_path(None, self.filename)
-            today_string = f"images/{uploaded_datetime.year}-{uploaded_datetime.month}-{uploaded_datetime.day}/{self.filename}"
-            self.assertEqual(image_path, today_string)
-
-    def test_default_values(self):
-        uploaded_datetime = datetime(2000, 1, 1, 0, 0, 0, tzinfo=ZoneInfo("Asia/Seoul"))
-        mock_datetime = Mock(return_value=uploaded_datetime)
-
-        with patch("django.utils.timezone", mock_datetime):
-            image = Image.objects.create(file=self.uploaded_image)
-            self.assertEqual(image.uploaded_date, uploaded_datetime)
