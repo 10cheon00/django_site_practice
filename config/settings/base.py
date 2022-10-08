@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
-    "django_summernote",
+    "ckeditor",
+    "ckeditor_uploader",
     "users",
     "posts",
 ]
@@ -177,30 +178,8 @@ EMAIL_HOST_USER = email_secrets["HOST_USER"]
 EMAIL_HOST_PASSWORD = email_secrets["HOST_PASSWORD"]
 
 
-# Django Summernote
+# CKEDITOR CONFIGS
 
-
-SUMMERNOTE_CONFIG = {
-    "iframe": True,
-    "summernote": {
-        "airMode": False,
-        "width": "100%",
-        "height": "400px",
-        "lang": "ko-KR",
-    },
-    "toolbar": [
-        ["style", ["style"]],
-        ["font", ["bold", "underline", "clear"]],
-        ["fontname", ["fontname"]],
-        ["color", ["color"]],
-        ["para", ["ul", "ol", "paragraph"]],
-        ["table", ["table"]],
-        ["insert", ["link", "picture", "video"]],
-        ["view", ["fullscreen", "codeview", "help"]],
-    ],
-    "attachment_require_authentication": True,
-    "attachment_absolute_uri": True,
-    "disable_attachment": False,
-}
+CKEDITOR_UPLOAD_PATH = "uploads/"
 
 X_FRAME_OPTIONS = "SAMEORIGIN"

@@ -21,7 +21,7 @@ from django.urls import path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/summernote/", include("django_summernote.urls")),
+    path("api/v1/ckeditor/", include("ckeditor_uploader.urls")),
     path("api/v1/auth/", include("users.urls")),
     path("api/v1/posts/", include("posts.urls")),
 ]
