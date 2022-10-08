@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "django_summernote",
     "users",
     "posts",
 ]
@@ -121,8 +122,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+STATIC_URL = "/static/"
 
 # Media files (Image, Files)
 
@@ -173,3 +175,32 @@ EMAIL_PORT = email_secrets["PORT"]
 EMAIL_HOST_USER = email_secrets["HOST_USER"]
 
 EMAIL_HOST_PASSWORD = email_secrets["HOST_PASSWORD"]
+
+
+# Django Summernote
+
+
+SUMMERNOTE_CONFIG = {
+    "iframe": True,
+    "summernote": {
+        "airMode": False,
+        "width": "100%",
+        "height": "400px",
+        "lang": "ko-KR",
+    },
+    "toolbar": [
+        ["style", ["style"]],
+        ["font", ["bold", "underline", "clear"]],
+        ["fontname", ["fontname"]],
+        ["color", ["color"]],
+        ["para", ["ul", "ol", "paragraph"]],
+        ["table", ["table"]],
+        ["insert", ["link", "picture", "video"]],
+        ["view", ["fullscreen", "codeview", "help"]],
+    ],
+    "attachment_require_authentication": True,
+    "attachment_absolute_uri": True,
+    "disable_attachment": False,
+}
+
+X_FRAME_OPTIONS = "SAMEORIGIN"

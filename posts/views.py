@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import AllowAny
 
-# Create your views here.
+from posts.models import Post
+from posts.serializers import PostSerializer
+
+
+class PostViewSet(ModelViewSet):
+    serializer_class = PostSerializer
+    permission_classes = (AllowAny,)
+    queryset = Post.objects.all()

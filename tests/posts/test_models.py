@@ -57,7 +57,6 @@ class PostModelTest(APITestCase):
             post = Post.objects.create(
                 title="title", author=self.user, category=self.category
             )
-            self.assertIsNone(post.content)
             self.assertEqual(post.created_date, mock_datetime)
             self.assertEqual(post.modified_date, mock_datetime)
             self.assertEqual(post.tags.count(), 0)
