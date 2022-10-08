@@ -1,12 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from django.db import models
 
-from django_summernote.fields import SummernoteTextField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 
 class Category(models.Model):
-    name = models.CharField(default="category", max_length=100)
+    name = models.CharField(default="category", max_length=100, unique=True)
 
     def __str__(self):
         return self.name
@@ -27,7 +26,7 @@ class Post(models.Model):
     author = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="posts"
     )
-    text = SummernoteTextField(default="")
+    content = RichTextUploadingField(default="")
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True, null=True)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
