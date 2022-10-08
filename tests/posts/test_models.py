@@ -5,11 +5,30 @@ from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db import transaction
+from django.db.utils import IntegrityError
 
 from rest_framework.test import APITestCase
 
 from posts.models import Category
 from posts.models import Post
+
+
+class CategoryModelTest(APITestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        Category.objects.all().delete()
+
+    def test_name_max_length(self):
+        max_length = Category._meta.get_field("name").max_length
+        self.assertEqual(max_length, 100)
+
+    def test_name_unique_constraint(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Category.objects.create(name="General")
+            Category.objects.create(name="General")
 
 
 class PostModelTest(APITestCase):
@@ -65,10 +84,6 @@ class PostModelTest(APITestCase):
             self.assertEqual(post.down_votes, 0)
             self.assertFalse(post.is_secret)
             self.assertFalse(post.is_notice)
-
-            #
-            # Need more test for images and files...
-            #
 
     def test_success_update_modified_date(self):
         zoneinfo = ZoneInfo("Asia/Seoul")
